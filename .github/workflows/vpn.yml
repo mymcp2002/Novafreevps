@@ -1,0 +1,31 @@
+name: Linux Tailscale VPN Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  vpn-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: 1. Install Tailscale
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+
+      - name: 2. Connect to Tailscale as Exit Node
+        env:
+          TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
+        run: |
+          sudo tailscale up --authkey="$TAILSCALE_AUTHKEY" --hostname="github-vpn-node" --advertise-exit-node
+
+      - name: 3. Keep Alive (6 Hours Max)
+        run: |
+          echo "=========================================="
+          echo "VPN Server is running successfully!"
+          echo "Host Name: github-vpn-node"
+          echo "=========================================="
+          for i in {1..360}; do
+            sleep 60
+            echo "[$i/360 min] VPN is active..."
+          done
