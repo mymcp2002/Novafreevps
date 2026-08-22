@@ -9,17 +9,23 @@ jobs:
     timeout-minutes: 360
 
     steps:
-      - name: 1. Install Tailscale
+      - name: 1. Enable IP Forwarding
+        run: |
+          echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.conf
+          echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.conf
+          sudo sysctl -p
+
+      - name: 2. Install Tailscale
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
 
-      - name: 2. Connect to Tailscale as Exit Node
+      - name: 3. Connect to Tailscale as Exit Node
         env:
           TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
         run: |
           sudo tailscale up --authkey="$TAILSCALE_AUTHKEY" --hostname="github-vpn-node" --advertise-exit-node
 
-      - name: 3. Keep Alive (6 Hours Max)
+      - name: 4. Keep Alive (6 Hours Max)
         run: |
           echo "=========================================="
           echo "VPN Server is running successfully!"
