@@ -18,7 +18,7 @@ jobs:
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
 
-      - name: Start Tailscale
+      - name: Connect Tailscale
         env:
           TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
         run: |
