@@ -13,9 +13,14 @@ jobs:
           sudo sysctl -w net.ipv4.ip_forward=1
           sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
-      - name: 2. Install Tailscale
+      - name: 2. Fast Install Tailscale
         run: |
-          curl -fsSL https://tailscale.com/install.sh | sh
+          curl -fsSL https://pkgs.tailscale.com/stable/tailscale_1.70.0_amd64.tgz -o tailscale.tgz
+          tar xzf tailscale.tgz
+          cd tailscale_*
+          sudo cp tailscale tailscaled /usr/bin/
+          sudo tailscaled &
+          sleep 2
 
       - name: 3. Connect to Tailscale
         env:
@@ -31,5 +36,5 @@ jobs:
 
       - name: 4. Keep Alive
         run: |
-          echo "VPN Server is running as an Exit Node..."
+          echo "VPN Server is running cleanly!"
           sleep 21600
