@@ -8,34 +8,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Enable IP Forwarding
+      - name: 1. Enable IP Forwarding
         run: |
           sudo sysctl -w net.ipv4.ip_forward=1
           sudo sysctl -w net.ipv6.conf.all.forwarding=1
-          echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
-          echo "net.ipv6.conf.all.forwarding=1" | sudo tee -a /etc/sysctl.conf
 
-      - name: Install Tailscale
+      - name: 2. Install Tailscale
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
 
-      - name: Connect to Tailscale with Full Routing
+      - name: 3. Connect to Tailscale
         env:
           TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
         run: |
           sudo tailscale up \
-            --authkey=${TAILSCALE_AUTHKEY} \
+            --authkey="${TAILSCALE_AUTHKEY}" \
             --advertise-exit-node \
-            --advertise-routes=0.0.0.0/0,::/0 \
             --accept-dns=true \
             --hostname=github-vpn-node \
             --port=41641 \
             --reset
 
-      - name: Keep Server Running
+      - name: 4. Keep Alive
         run: |
           echo "VPN Server is running as an Exit Node..."
           sleep 21600
