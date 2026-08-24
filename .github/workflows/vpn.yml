@@ -13,28 +13,14 @@ jobs:
           sudo sysctl -w net.ipv4.ip_forward=1
           sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
-      - name: 2. Fast Install Tailscale
-        run: |
-          curl -fsSL https://pkgs.tailscale.com/stable/tailscale_1.70.0_amd64.tgz -o tailscale.tgz
-          tar xzf tailscale.tgz
-          cd tailscale_*
-          sudo cp tailscale tailscaled /usr/bin/
-          sudo tailscaled &
-          sleep 2
+      - name: 2. Connect Tailscale via Official Action
+        uses: tailscale/github-action@v2
+        with:
+          oauth-secret: ''
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          args: --advertise-exit-node --accept-dns=true --hostname=github-vpn-node --port=41641 --reset
 
-      - name: 3. Connect to Tailscale
-        env:
-          TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
+      - name: 3. Keep Alive
         run: |
-          sudo tailscale up \
-            --authkey="${TAILSCALE_AUTHKEY}" \
-            --advertise-exit-node \
-            --accept-dns=true \
-            --hostname=github-vpn-node \
-            --port=41641 \
-            --reset
-
-      - name: 4. Keep Alive
-        run: |
-          echo "VPN Server is running cleanly!"
+          echo "VPN Server is running natively!"
           sleep 21600
