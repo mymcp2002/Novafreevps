@@ -1,5 +1,30 @@
-- name: Connect Tailscale
+name: Linux Tailscale VPN Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  vpn-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Enable IP Forwarding and NAT
+        run: |
+          sudo sysctl -w net.ipv4.ip_forward=1
+          sudo sysctl -w net.ipv6.conf.all.forwarding=1
+          sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+      - name: Install Tailscale
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+
+      - name: Connect Tailscale
         env:
           TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
         run: |
-          sudo tailscale up --authkey="${TAILSCALE_AUTHKEY}" --advertise-exit-node --hostname=github-vpn-node --snat-subnet-routes=true --accept-dns=false --reset
+          sudo tailscale up --authkey="${TAILSCALE_AUTHKEY}" --advertise-exit-node --hostname=github-vpn-node
+
+      - name: Keep Alive
+        run: |
+          echo "Server Alive"
+          sleep 21600
