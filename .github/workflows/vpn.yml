@@ -8,11 +8,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Enable IP Forwarding and NAT
+        run: |
+          sudo sysctl -w net.ipv4.ip_forward=1
+          sudo sysctl -w net.ipv6.conf.all.forwarding=1
+          sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
       - name: Install Tailscale
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
 
-      - name: Start Tailscale Node
+      - name: Connect Tailscale
         env:
           TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
         run: |
@@ -20,5 +26,4 @@ jobs:
 
       - name: Keep Alive
         run: |
-          echo "Server Active"
           sleep 21600
